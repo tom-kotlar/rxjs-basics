@@ -1,5 +1,5 @@
 import './style.css'
-import { Observable } from 'rxjs';
+import { Observable, fromEvent } from 'rxjs';
 
 const observer = {
   next: (value: any) => console.log('next', value),
@@ -8,46 +8,29 @@ const observer = {
 };
 
 
-const observable = new Observable(subscriber => {
-  let count = 0;
-  // Observables can deliver 0:M values synchronous or asynchronously
-  const id = setInterval(() => {
-    subscriber.next(count);
-    // calling complete also invokes the cleanup function you return
-    subscriber.complete();
-    count += 1;
-  }, 1000);
-
-  /*
-   * You can return a function to clean up any resources that were
-   * created with subscription. In this case, we need to clear 
-   * the active interval. When using RxJS's built in creation operators
-   * this will be handled for us.
-   */
-  return () => {
-    console.log('called');
-    clearInterval(id);
-  };
-});
-
-const subscription = observable.subscribe(observer);
-const subscriptionTwo = observable.subscribe(observer);
+/*
+ *  Create streams from events, given target and event name.
+ */
+const source$: Observable<any> = fromEvent(document, 'keyup');
 
 /*
- * Subscriptions can be added together using the add method,
- * you can then unsubscribe to multiple at the same time.
- * This is simply personal preference, unsubscribing individually 
- * will produce the same result. Also, in future lessons, we will see how
- * to automate this unsubscribe process with operators.
+ *  Each subscription creates it's own execution path between
+ *  observable and observer (also known as unicasting). So, in this case,
+ *  every subscription will wire up a new event listener.
  */
-subscription.add(subscriptionTwo);
+const subOne = source$.subscribe(observer);
+const subTwo = source$.subscribe(observer);
+
 
 setTimeout(() => {
- /*
-  * Note: Calling unsubscribe will not fire your complete callback,
-  * but the returned function will be invoked cleaning up any
-  * resources that were created by the subscription - in this
-  * case the interval.
-  */
-  subscription.unsubscribe();
-}, 3500);
+  /*
+   *  For long running observables we need to make sure to clean
+   *  them up when we are finished to prevent memory leaks and
+   *  unintended behavior. In this case, we are cleaning up
+   *  one subscription but not the other, leaving it active.
+   *  We will learn different techniques to automate this
+   *  process in an upcoming lesson.
+   */
+  console.log('unsubscribing');
+  subOne.unsubscribe();
+}, 3000);
