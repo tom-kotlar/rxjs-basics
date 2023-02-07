@@ -44,6 +44,7 @@ const state$ = from(user).pipe(scan((accumulator, currentValue) => {
  * emission. We will also see how to share an execution path between 
  * subscribers when necessary.
  */
+
 const name$ = state$.pipe(
   map((state: any) => state.name)
 );
