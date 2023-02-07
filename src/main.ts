@@ -1,29 +1,35 @@
 import './style.css'
-import { interval, timer } from 'rxjs';
+
+import { fromEvent } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 /*
- * interval emits numbers in sequence based on the
- * duration that you specify. In this case, a number
- * will be emitted every 1000ms (1s)
+ * Calculate progress based on scroll position
  */
-const interval$ = interval(1000);
+function calculateScrollPercent(element: { scrollTop: any; scrollHeight: any; clientHeight: any; }) {
+  const { scrollTop, scrollHeight, clientHeight } = element;
 
-/*
- * We'll just supply a function for next in this case,
- * rather than observer object.
- */
-interval$.subscribe(console.log);
+  return (scrollTop / (scrollHeight - clientHeight)) * 100;
+}
 
-/*
- * If you need the first item to be emitted on an interval
- * different than the rest, you can use the timer operator instead.
- * For example, let's have the first item emit immediately, followed
- * by a value every 1000ms after.
- */
- const timer$ = timer(0, 1000);
 
+// elems
+const progressBar: any = document.querySelector('.progress-bar');
+
+// streams
+const scroll$ = fromEvent(document, 'scroll');
+
+const progress$ = scroll$.pipe(
+  /*
+   * For every scroll event, we use our helper function to 
+   * map to a current scroll progress value.
+   */
+  map(({ target }: any) => calculateScrollPercent(target.scrollingElement))
+);
 /*
- * You can also emit a single item after a specified duration, then complete,
- * by just supplying the first argument.
+ * We can then take the emitted percent and set the width
+ * on our progress bar.
  */
-//  const timer$ = timer(1000);
+progress$.subscribe(percent => {
+  progressBar.style.width = `${percent}%`;
+});
