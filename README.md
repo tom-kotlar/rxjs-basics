@@ -12,3 +12,10 @@ RxJS Starter Project
 </div>
 
 ---
+
+
+DOCS: 
+
+https://rxjs.dev/
+
+https://www.learnrxjs.io
