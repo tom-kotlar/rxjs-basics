@@ -80,3 +80,8 @@ body {
   width: 0%;
   background: #ff16b7;
 }
+
+#countdown {
+  margin-top: 20px;
+  font-size: 32px;
+}
