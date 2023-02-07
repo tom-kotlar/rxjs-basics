@@ -1,35 +1,43 @@
 import './style.css'
 
-import { fromEvent } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { from, interval } from 'rxjs';
+import { reduce, take } from 'rxjs/operators';
+
+const numbers = [1, 2, 3, 4, 5];
 
 /*
- * Calculate progress based on scroll position
+ * Reducer functions take the accumulated value (last return) 
+ * and current value, returning a new accumulated value. 
+ * You can think of this like a snowball rolling downhill, 
+ * collecting values over time.
  */
-function calculateScrollPercent(element: { scrollTop: any; scrollHeight: any; clientHeight: any; }) {
-  const { scrollTop, scrollHeight, clientHeight } = element;
+const totalReducer = (accumulator: any, currentValue: any) => {
+    // console.log(accumulator, currentValue)
+  return accumulator + currentValue;
+};
 
-  return (scrollTop / (scrollHeight - clientHeight)) * 100;
-}
-
-
-// elems
-const progressBar: any = document.querySelector('.progress-bar');
-
-// streams
-const scroll$ = fromEvent(document, 'scroll');
-
-const progress$ = scroll$.pipe(
-  /*
-   * For every scroll event, we use our helper function to 
-   * map to a current scroll progress value.
-   */
-  map(({ target }: any) => calculateScrollPercent(target.scrollingElement))
-);
 /*
- * We can then take the emitted percent and set the width
- * on our progress bar.
+ * Our reducer function is invoked on each emission and the accumulated
+ * value stored. On completion the current accumulated value is emitted.
+ * In this example we are supplying a seed value (initial accumulator) of 0
+ * as the second parameter.
  */
-progress$.subscribe(percent => {
-  progressBar.style.width = `${percent}%`;
-});
+from(numbers)
+  .pipe(reduce(totalReducer, 0))
+  .subscribe(console.log);
+
+interval(1000)
+  .pipe(
+    /*
+     * Important! reduce only emits one value, the final accumulated value
+     * on completion. We are forcing completion by using the take operator.
+     * If you want to emit each new accumulated value, you will use the scan
+     * operator, which is the focus of the next lesson.
+     */
+    take(3),
+    reduce(totalReducer, 0)
+  )
+  .subscribe({
+    next: console.log,
+    complete: () => console.log('Complete!')
+  });
