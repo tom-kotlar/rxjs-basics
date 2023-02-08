@@ -1,46 +1,39 @@
 
-import { of, distinctUntilChanged, distinctUntilKeyChanged,map, from, scan } from 'rxjs';
+import { debounce, debounceTime, distinctUntilChanged, fromEvent, interval, map, tap } from 'rxjs';
 import './style.css'
 
-
-const numbers$ = of(1, '1', 2, 3, 3, 3, 4, 5, 3);
-
-// const numbers$ = of(1, 1, 2, 3, 3, 3, 4, 5);
-
-/*
- * distinctUntilChanged emits unique values based
- * on a === comparison to the last emitted value.
- */
-numbers$.pipe(distinctUntilChanged()).subscribe(console.log);
-
-const user = [
-    { name: 'Brian', loggedIn: false, token: null },
-    { name: 'Brian', loggedIn: true, token: 'abc' },
-    { name: 'Brian', loggedIn: true, token: '123' }
-  ];
+const click$ = fromEvent(document, 'click')
 
 
-  const state$ = from(user).pipe(
-    scan((accumulator, currentValue) => {
-      return { ...accumulator, ...currentValue };
-    }, {})
-  );
-  
-  const name$ = state$.pipe(
-    /*
-     * If comparing based on a property you can use
-     * the distinctUntilKeyChanged helper operator instead.
+
+click$.pipe(
+    debounceTime(1000)
+).subscribe(console.log)
+
+const inputBox: any = document.getElementById('text-input')
+const input$ = fromEvent(inputBox, 'keyup');
+
+
+input$.pipe(
+     /*
+     * debounceTime emits the last emitted value from the source 
+     * after a pause, based on a duration you specify.
+     * For instance, in this case when the user starts typing all values
+     * will be ignored until they paused for at least 200ms,
+     * at which point the last value will be emitted.
      */
-    // @ts-ignore
-     distinctUntilKeyChanged('name'),
-    /*
-     * If you need to use a custom comparer, you can
-     * pass distinctUntilChanged a comparer function.
-     * ex. distinctUntilChanged((prev, curr) => {
-     *   return prev.name === curr.name;
-     * })
+    debounceTime(1000),
+    map(({target}: any) => target.value),
+     /* 
+     * If the user types, then backspaces quickly, the same value could
+     * be emitted twice in a row. Using distinctUntilChanged will prevent
+     * this from happening.
      */
-     map((state: any) => state.name)
-  );
-  
-  name$.subscribe(console.log);
+    distinctUntilChanged()
+).subscribe(console.log)
+
+// input$.pipe(
+//     debounce(() => interval(1000)),
+//     map(({target}: any) => target.value),
+//     distinctUntilChanged()
+// ).subscribe(console.log)
