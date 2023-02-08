@@ -1,39 +1,55 @@
 
-import { debounce, debounceTime, distinctUntilChanged, fromEvent, interval, map, tap } from 'rxjs';
+import { asyncScheduler, debounce, debounceTime, distinctUntilChanged, fromEvent, interval, map, tap, throttleTime } from 'rxjs';
 import './style.css'
 
 const click$ = fromEvent(document, 'click')
 
 
 
-click$.pipe(
-    debounceTime(1000)
-).subscribe(console.log)
-
-const inputBox: any = document.getElementById('text-input')
-const input$ = fromEvent(inputBox, 'keyup');
-
-
-input$.pipe(
-     /*
-     * debounceTime emits the last emitted value from the source 
-     * after a pause, based on a duration you specify.
-     * For instance, in this case when the user starts typing all values
-     * will be ignored until they paused for at least 200ms,
-     * at which point the last value will be emitted.
-     */
-    debounceTime(1000),
-    map(({target}: any) => target.value),
-     /* 
-     * If the user types, then backspaces quickly, the same value could
-     * be emitted twice in a row. Using distinctUntilChanged will prevent
-     * this from happening.
-     */
-    distinctUntilChanged()
-).subscribe(console.log)
-
-// input$.pipe(
-//     debounce(() => interval(1000)),
-//     map(({target}: any) => target.value),
-//     distinctUntilChanged()
+// click$.pipe(
+//      /*
+//       * throttleTime will emit the first value, then ignore
+//       * values for the specified duration. After that duration
+//       * has passed, the next value from the source will be
+//       * emitted, with the previous behavior repeated.
+//       */
+//     throttleTime(3000)
 // ).subscribe(console.log)
+
+function calculateScrollPercent(element: { scrollTop: any; scrollHeight: any; clientHeight: any; }) {
+    const { scrollTop, scrollHeight, clientHeight } = element;
+  
+    return (scrollTop / (scrollHeight - clientHeight)) * 100;
+  }
+  
+  // elems
+  const progressBar: any = document.querySelector('.progress-bar');
+  
+  // streams
+  const scroll$ = fromEvent(document, 'scroll');
+  
+  const progress$ = scroll$.pipe(
+    /*
+     * For extremely active streams like scroll events,
+     * throttleTime can be used to limit the number of emitted
+     * values. In this case, we'll just update our scroll bar every
+     * 30ms of scrolling.
+     */
+    throttleTime(30, asyncScheduler, {
+        leading: false,
+        trailing: true
+    }),
+    /*
+     * For every scroll event, we use our helper function to 
+     * map to a current scroll progress value.
+     */
+    map(({ target }: any) => calculateScrollPercent(target.documentElement)),
+    tap(console.log)
+  );
+  /*
+   * We can then take the emitted percent and set the width
+   * on our progress bar.
+   */
+  progress$.subscribe(percent => {
+    progressBar.style.width = `${percent}%`;
+  });
