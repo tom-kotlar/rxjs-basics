@@ -1,54 +1,46 @@
-import { Observable,fromEvent, interval, scan, takeUntil, takeWhile, tap,} from 'rxjs'
+
+import { of, distinctUntilChanged, distinctUntilKeyChanged,map, from, scan } from 'rxjs';
 import './style.css'
 
 
-const click$: Observable<Event> = fromEvent(document, 'click')
-const counter$: Observable<number> = interval(1000);
+const numbers$ = of(1, '1', 2, 3, 3, 3, 4, 5, 3);
 
-
-
+// const numbers$ = of(1, 1, 2, 3, 3, 3, 4, 5);
 
 /*
- * takeUntil lets you complete a stream based
- * on when another stream emits a value. For instance,
- * in this example our counter will run until the click$
- * stream emits a value, at which point the observable
- * will be completed.
+ * distinctUntilChanged emits unique values based
+ * on a === comparison to the last emitted value.
  */
+numbers$.pipe(distinctUntilChanged()).subscribe(console.log);
 
-// counter$.pipe(
-//   takeUntil(click$)
-// ).subscribe(console.log);
+const user = [
+    { name: 'Brian', loggedIn: false, token: null },
+    { name: 'Brian', loggedIn: true, token: 'abc' },
+    { name: 'Brian', loggedIn: true, token: '123' }
+  ];
 
 
-
-const countdown: any = document.getElementById('countdown');
-const message: any = document.getElementById('message');
-const abortButton: any = document.getElementById('abort');
-
-// streams
-
-const abort$ = fromEvent(abortButton, 'click');
-
-counter$
-  .pipe(
-    scan((accumulator, current) => {
-      return accumulator - 1;
-    }, 10),
-    tap( console.log),
-    takeWhile(value => value >= 0),
+  const state$ = from(user).pipe(
+    scan((accumulator, currentValue) => {
+      return { ...accumulator, ...currentValue };
+    }, {})
+  );
+  
+  const name$ = state$.pipe(
     /*
-     * When you want to complete a stream based on another
-     * stream you can use takeUntil. In this case, whenever
-     * our button click stream emits the observable will
-     * complete, letting us stop the countdown before
-     * it reaches zero.
+     * If comparing based on a property you can use
+     * the distinctUntilKeyChanged helper operator instead.
      */
-    takeUntil(abort$)
-  )
-  .subscribe((value: any) => {
-    countdown.innerHTML = value;
-    if (!value) {
-      message.innerHTML = 'Liftoff!';
-    }
-  });
+    // @ts-ignore
+     distinctUntilKeyChanged('name'),
+    /*
+     * If you need to use a custom comparer, you can
+     * pass distinctUntilChanged a comparer function.
+     * ex. distinctUntilChanged((prev, curr) => {
+     *   return prev.name === curr.name;
+     * })
+     */
+     map((state: any) => state.name)
+  );
+  
+  name$.subscribe(console.log);
