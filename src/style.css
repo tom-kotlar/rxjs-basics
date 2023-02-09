@@ -103,3 +103,15 @@ body {
   border: 1px solid black;
   font-size:16px;
 }
+
+
+
+p {
+  margin-top: 20px;
+}
+
+.radio-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
