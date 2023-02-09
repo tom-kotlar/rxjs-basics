@@ -115,3 +115,19 @@ p {
   align-items: center;
   justify-content: center;
 }
+
+#dog {
+  margin-top: 10px;
+}
+
+#start, #stop {
+  color: white;
+}
+
+#start {
+  background: green;
+}
+
+#stop {
+  background: red;
+}

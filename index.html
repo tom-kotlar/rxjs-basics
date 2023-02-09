@@ -21,8 +21,27 @@
     <h2 id="countdown"></h2>
     <div id="message"></div>
     <!-- <button id="abort"> Abort Mission </button> -->
-    <input type="text" id="text-input">
-    <div id="typeahead-container"></div>
+    <!-- <input type="text" id="text-input">
+    <div id="typeahead-container"></div> -->
+
+    <div>
+      <p>
+        Start polling to request random
+        <a href="https://random.dog/">dog</a> images!
+      </p>
+      <p>
+        Polling Status:
+        <span id="polling-status">Stopped</span>
+      </p>
+      <button id="start">Start Polling</button>
+      <button id="stop">Stop Polling</button>
+    </div>
+    <img
+      style="max-width: 400px; max-height: 400px;"
+      id="dog"
+      src="https://random.dog/5f2228be-01e8-421a-9fc3-47b9daa4740b.jpg"
+      alt="dog!"
+    />
    
   </div>
 

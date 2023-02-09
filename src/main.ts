@@ -1,61 +1,43 @@
 
 
-import { EMPTY, catchError, debounceTime, distinctUntilChanged, empty, fromEvent, map, switchMap } from 'rxjs';
+import { exhaustMap, finalize, fromEvent, map, mergeMap, pluck, switchMap, switchMapTo, takeUntil, tap, timer } from 'rxjs';
 import './style.css'
 import { ajax } from 'rxjs/ajax';
 
- 'rxjs/operators';
+ const startButton: any = document.getElementById('start')
+ const stopButton: any = document.getElementById('stop')
+ const polingStatus: any = document.getElementById('polling-status')
+ const dogImage: any = document.getElementById('dog');
 
-const BASE_URL = 'https://api.openbrewerydb.org/breweries';
+ const startclick$ = fromEvent(startButton, 'click')
+ const stopclick$ = fromEvent(stopButton, 'click')
 
-//elems
-const inputBox: any = document.getElementById('text-input');
-const typeaheadContainer: any = document.getElementById('typeahead-container');
-
-// streams
-const input$ = fromEvent(inputBox, 'keyup');
-
-input$
-  .pipe(
-    debounceTime(200),
-  map( (event: any) => event.target.value),
-    distinctUntilChanged(),
-    switchMap(searchTerm => ajax.getJSON(
-      `${BASE_URL}?by_name=${searchTerm}`
-      )
-      .pipe(
-        /*
-         * catchError receives the error and the
-         * observable on which the error was caught
-         * (in case you wish to retry). In this case,
-         * we are catching the error on the ajax
-         * observable returned by our switchMap
-         * function, as we don't want the entire
-         * input$ stream to be completed in the
-         * case of an error.
-         */
-        catchError((error, caught) => {
-          /*
-           * In this case, we just want to ignore
-           * any errors and hope the next request
-           * succeeds so we will just return an 
-           * empty observable (completes without
-           * emitting any values).
-           * 
-           * You can also use the EMPTY import, 
-           * which is just a shortcut for empty(). 
-           * Behind the scenes empty() returns the
-           * EMPTY constant when a scheduler is not provided.
-           * ex. import { EMPTY } from 'rxjs';
-           * return EMPTY;
-           * https://github.com/ReactiveX/rxjs/blob/fc3d4264395d88887cae1df2de1b931964f3e684/src/internal/observable/empty.ts#L62-L64
-           */
-           return EMPTY;
-        })
-      )
+ startclick$
+ .pipe(
+  /*
+   * Every start click we will map to an interval which
+   * emits every 5 seconds to request a new image.
+   * Since we do not want multiple polls active at once,
+   * we'll use exhaustMap to ignore any emissions
+   * while the inner interval is running.
+   */
+  exhaustMap(() =>
+    timer(0, 5000).pipe(
+      tap(() => (polingStatus.innerHTML = 'Active')),
+      switchMap(
+      () =>  ajax.getJSON('https://random.dog/woof.json', {'Content-Type':'application/json','Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': "GET"})),
+      /*
+       * Cancel the poll when stop click stream emits
+       */
+      takeUntil(stopclick$),
+      /*
+       * We'll use finalize to update the status to stopped
+       * each time the inner observable completes.
+       */
+      finalize(() => (polingStatus.innerHTML = 'Stopped'))
     )
   )
-  .subscribe((response: any) => {
-    // update ui
-    typeaheadContainer.innerHTML = response.map((b:any) => b.name).join('<br>');
-  });
+)
+.subscribe(url => (dogImage.src = url));
+
+
