@@ -1,35 +1,61 @@
 
 
-import { exhaustMap, fromEvent, interval, mergeMap, switchMap, take, tap } from 'rxjs';
+import { EMPTY, catchError, debounceTime, distinctUntilChanged, empty, fromEvent, map, switchMap } from 'rxjs';
 import './style.css'
 import { ajax } from 'rxjs/ajax';
 
-// const interval$ = interval(1000)
-// const clicks$ = fromEvent(document,'click')
+ 'rxjs/operators';
 
-// clicks$.pipe(
-//   /*
-//   exhaustMap ignores values from previus emitted from the source while there is
-//   active inner observble
-//   */
-//   exhaustMap(() => interval$.pipe(take(3)))
-// ).subscribe(console.log)
+const BASE_URL = 'https://api.openbrewerydb.org/breweries';
 
+//elems
+const inputBox: any = document.getElementById('text-input');
+const typeaheadContainer: any = document.getElementById('typeahead-container');
 
-const authenticateUser = () => {
-  return ajax.post(
-    'https://reqres.in/api/login',
-    {
-      email: 'eve.holt@reqres.in',
-      password: 'babajaga'
-    })
-} 
+// streams
+const input$ = fromEvent(inputBox, 'keyup');
 
-const logingButton: any = document.getElementById('login')
-
-const login$ = fromEvent(logingButton, 'click')
-
-login$.pipe(
-  tap(console.log),
-  exhaustMap(() => authenticateUser())
-).subscribe(console.log)
+input$
+  .pipe(
+    debounceTime(200),
+  map( (event: any) => event.target.value),
+    distinctUntilChanged(),
+    switchMap(searchTerm => ajax.getJSON(
+      `${BASE_URL}?by_name=${searchTerm}`
+      )
+      .pipe(
+        /*
+         * catchError receives the error and the
+         * observable on which the error was caught
+         * (in case you wish to retry). In this case,
+         * we are catching the error on the ajax
+         * observable returned by our switchMap
+         * function, as we don't want the entire
+         * input$ stream to be completed in the
+         * case of an error.
+         */
+        catchError((error, caught) => {
+          /*
+           * In this case, we just want to ignore
+           * any errors and hope the next request
+           * succeeds so we will just return an 
+           * empty observable (completes without
+           * emitting any values).
+           * 
+           * You can also use the EMPTY import, 
+           * which is just a shortcut for empty(). 
+           * Behind the scenes empty() returns the
+           * EMPTY constant when a scheduler is not provided.
+           * ex. import { EMPTY } from 'rxjs';
+           * return EMPTY;
+           * https://github.com/ReactiveX/rxjs/blob/fc3d4264395d88887cae1df2de1b931964f3e684/src/internal/observable/empty.ts#L62-L64
+           */
+           return EMPTY;
+        })
+      )
+    )
+  )
+  .subscribe((response: any) => {
+    // update ui
+    typeaheadContainer.innerHTML = response.map((b:any) => b.name).join('<br>');
+  });
