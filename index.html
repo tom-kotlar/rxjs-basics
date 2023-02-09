@@ -23,33 +23,19 @@
     <!-- <button id="abort"> Abort Mission </button> -->
     <!-- <input type="text" id="text-input">
     <div id="typeahead-container"></div> -->
-    <p>What is your favorite operator?</p>
-    <div class="radio-container">
-      <input 
-        type="radio"      
-        class="radio-option" 
-        name="operator" 
-        value="mergeMap">
-      <label for="mergeMap">mergeMap</label>
-    </div>
-    <div class="radio-container">
-      <input 
-        type="radio"      
-        class="radio-option" 
-        name="operator" 
-        value="switchMap">
-      <label for="switchMap">switchMap</label>
-    </div>
-    <div class="radio-container">
-      <input 
-        type="radio"      
-        class="radio-option" 
-        name="operator" 
-        value="concatMap">
-      <label for="concatMap">concatMap</label>
-    </div>
-    
+    <form action="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="text" id="email" name="email">
+      </div>
 
+      <div class="form-group">
+        <label for="username">Password</label>
+        <input type="password" id="password" name="password">
+      </div>
+
+      <button id="login" type="button">Login</button>
+    </form>
   </div>
 
   <script type="module" src="/src/main.ts"></script>
