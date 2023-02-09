@@ -120,14 +120,23 @@ p {
   margin-top: 10px;
 }
 
-#start, #stop {
+#countdown {
+  margin-top: 20px;
+  font-size: 32px;
+}
+
+#start, #pause {
   color: white;
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin-top: 10px;
+}
+
+#pause {
+  background: red;
 }
 
 #start {
-  background: green;
+  background: green; 
 }
 
-#stop {
-  background: red;
-}

@@ -1,57 +1,69 @@
 
 
-import { endWith, fromEvent, interval, of, scan, startWith, takeUntil, takeWhile } from 'rxjs';
+import { EMPTY, fromEvent, interval, map, merge, scan, startWith, switchMap, takeWhile } from 'rxjs';
 import './style.css'
 import { ajax } from 'rxjs/ajax';
 
- const numbers$ = of(1,2,3);
+ /*
+ * CODE FOR FOR FIRST SECTION OF LESSON
+ */
+// const keyup$ = fromEvent(document, 'keyup');
+// const click$ = fromEvent(document, 'click');
 
-numbers$.pipe(
-  /*
-   * startWith lets you seed a stream with 1:M values.
-   * On subscription, these values will be emitted
-   * immediately, followed by any future values from
-   * the source.
-   */
-  startWith('a', 'b', 'c'),
-  /*
-   * You can also end a stream with any number of values,
-   * emitted on completion.
-   */
-  endWith('d', 'e', 'f')
-).subscribe(console.log);
+// keyup$.subscribe(console.log);
+// click$.subscribe(console.log);
+
+/*
+ * merge subscribes to all provided streams on subscription,
+ * emitting any values emitted by these streams.
+ */
+// merge(keyup$, click$).subscribe(console.log);
+
 
 /*
  * BEGIN SECOND SECTION OF LESSON
  */
 // elem refs
-const countdown: any  = document.getElementById('countdown');
-const message: any  = document.getElementById('message');
-const abortButton: any = document.getElementById('abort');
+const countdown: any = document.getElementById('countdown');
+const message: any= document.getElementById('message');
+const pauseButton : any= document.getElementById('pause');
+const startButton: any = document.getElementById('start');
 
 // streams
 const counter$ = interval(1000);
-const abort$ = fromEvent(abortButton, 'click');
+const pauseClick$ = fromEvent(pauseButton, 'click');
+const startClick$ = fromEvent(startButton, 'click');
 
 const COUNTDOWN_FROM = 10;
 
-counter$
-  .pipe(
-    scan((accumulator, current) => {
-      return accumulator  - 1 ;
-    }, COUNTDOWN_FROM),
-    takeWhile(value => value >= 0),
-    takeUntil(abort$),
-    /*
-     * With startWith, we can seed the stream with
-     * the starting countdown value.
-     */
-    startWith(COUNTDOWN_FROM)
-  )
-  .subscribe((value: any) => {
-    countdown.innerHTML = value;
-    if (!value) {
-      message.innerHTML = 'Liftoff!';
-    }
-  });
+/*
+ * With merge, we can combine the start and pause
+ * streams, taking relevant action below depending
+ * on which stream emits a value.
+ */
+merge(
+  startClick$.pipe(map(() => true)), 
+  pauseClick$.pipe(map(() => false))
+)
+.pipe(
+  /*
+   * Depending on whether start or pause was clicked,
+   * we'll either switch to the interval observable,
+   * or to an empty observable which will act as a pause.
+   */
+  switchMap(shouldStart => {
+    return shouldStart ? counter$ : EMPTY;
+  }),
 
+  scan((accumulator, current) => {
+    return accumulator - 1;
+  }, COUNTDOWN_FROM),
+  takeWhile(value => value >= 0),
+  startWith(COUNTDOWN_FROM)
+)
+.subscribe(value => {
+  countdown.innerHTML = value;
+  if (!value) {
+    message.innerHTML = 'Liftoff!';
+  }
+});
