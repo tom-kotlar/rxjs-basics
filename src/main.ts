@@ -1,59 +1,31 @@
 
 
-import { combineLatest, filter, fromEvent, map } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import './style.css'
 import { ajax } from 'rxjs/ajax';
 
- // elems
-const first = document.getElementById('first');
-const second = document.getElementById('second');
-
-// streams
-const keyup$ = fromEvent(document, 'keyup');
-const click$ = fromEvent(document, 'click');
-
-// helpers
-const keyupAsValue = (elem: any) => {
-  return fromEvent(elem, 'keyup').pipe(
-    map((event: any) => event.target.valueAsNumber)
-  );
-};
+const GITHUB_API_BASE = 'https://api.github.com';
 
 /*
- * Each time any stream provided to combineLatest
- * emits a value, the latest value from all provided
- * streams will be emitted as an array. Note that all
- * provided streams must emit at least one value before
- * combineLatest will emit any values.
+ * forkJoin waits for all inner observables to complete 
+ * before emitting the last emitted value of each.
+ * The use cases for forkJoin are generally similar to
+ * Promise.all
  */
-// combineLatestWith(
-//   keyup$,
-//   click$
-// ).subscribe(console.log);
+forkJoin({
+  user: ajax.getJSON(`${GITHUB_API_BASE}/users/tom-kotlar`),
+  repo: ajax.getJSON(`${GITHUB_API_BASE}/users/tom-kotlar/repos`)
+}).subscribe(console.log);
 
 /*
- * When you want to augment one stream with 
- * information from a second stream on emitted values,
- * withLatestFrom is a perfect choice.
+ * You can also pass in comma seperated arugments and
+ * receieve an array in return. This is the only option if
+ * you are using less than RxJS 6.5
  */
-// click$.pipe(
-//   withLatestFrom(interval(1000))
-// ).subscribe(console.log);
 
-/*
- * combineLatest is great when an element depends
- * on the combination of multiple streams to make
- * some calculation or determination. We will explore
- * this concept further in the next lab.
- */
-combineLatest([
-  keyupAsValue(first), 
-  keyupAsValue(second)
-]
-)
-.pipe(
-  filter(([first, second]) => {
-    return !isNaN(first) && !isNaN(second);
-  }),
-  map(([first, second]) => first + second)
-).subscribe(console.log);
+// forkJoin(
+//   ajax.getJSON(`${GITHUB_API_BASE}/users/reactivex`),
+//   ajax.getJSON(`${GITHUB_API_BASE}/users/reactivex/repos`)
+// ).subscribe(([user, repos]) => {
+//   // perform action
+// });
