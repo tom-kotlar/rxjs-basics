@@ -1,29 +1,32 @@
 
-import { Observable, auditTime, fromEvent, map } from 'rxjs';
+import { debounceTime, fromEvent, map, mergeAll, mergeMap} from 'rxjs';
+import { ajax } from 'rxjs/ajax';
 import './style.css'
 
-const click$: Observable<any>  = fromEvent(document, 'click')
+const textInput: any = document.getElementById('text-input')
+
+const input$ = fromEvent(textInput, 'keyup')
+
+// input$.pipe(
+//   map((event: any) => {
+//     const term = event.target.value
+
+//     return ajax.getJSON(
+//       `https://swapi.dev/api/people/${term}/`
+//     )
+//   }), 
+//   debounceTime(1000), 
+//   mergeAll()
+// ).subscribe(console.log)
 
 
+input$.pipe(
+  debounceTime(1000), 
+  mergeMap((event: any) => {
+    const term = event.target.value
 
-click$
-  .pipe(
-    /*
-     * auditTime will begin window when the source emits. Then,
-     * once the window passes, the last emitted value
-     * from the source will be emitted. For instance, in this
-     * example if you click a 4s timer will be started. 
-     * At the end, the last click event during that window
-     * will be emitted by auditTime. This is similar to the
-     * behavior of throttleTime, if you were to pass in a config
-     * to emit the value on the trailing edge.
-     */
-    auditTime(4000),
-    /*
-     * adding mapping to stackblitz example since logging
-     * raw events is flaky
-     */
-    
-    map(({clientX, clientY}) => ({clientX, clientY}))
-  )
-  .subscribe(console.log);
+    return ajax.getJSON(
+      `https://swapi.dev/api/people/${term}/`
+    )
+  })
+).subscribe(console.log)
