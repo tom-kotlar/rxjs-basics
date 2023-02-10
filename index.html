@@ -1,27 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RxJS Starter - Ultimate Courses</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RxJS Starter - Ultimate Courses</title>
-</head>
+  <body>
+    <header class="header">
+      <div class="logo">
+        <div class="logo-ultimate"></div>
+        <p class="logo-name">Ultimate Courses<span>&trade;</span></p>
+      </div>
+    </header>
+    <div id="app">
+      <h1>Ultimate RxJS</h1>
+      <div class="calculator-wrapper">
+        <h2>Mortgage Calculator</h2>
+        <div class="form-wrapper">
+          <label for="loanAmount"> Mortgage Amount ($) </label>
+          <input type="number" name="loanAmount" id="loanAmount" />
+        </div>
 
-<body>
-  <header class="header">
-    <div class="logo">
-      <div class="logo-ultimate"></div>
-      <p class="logo-name">Ultimate Courses<span>&trade;</span></p>
+        <div class="form-wrapper">
+          <label for="interest"> Interest Rate (%) </label>
+          <input type="number" name="interest" id="interest" />
+        </div>
+
+        <div class="form-wrapper">
+          <label for="loanLength">Mortgage Length</label>
+          <div>
+            <input
+              type="radio"
+              name="loanLength"
+              class="loanLength"
+              value="180"
+            />
+            15 yr
+            <input
+              type="radio"
+              name="loanLength"
+              class="loanLength"
+              value="360"
+            />
+            30 yr
+          </div>
+        </div>
+        <div>
+          Your expected monthly payment is: $<strong id="expected"></strong>
+        </div>
+      </div>
     </div>
-  </header>
-  <div id="app">
 
-    <h1>Ultimate RxJS</h1>
-
-  </div>
-
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
