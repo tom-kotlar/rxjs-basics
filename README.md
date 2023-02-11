@@ -11,6 +11,11 @@ RxJS Starter Project
 <a href="https://ultimatecourses.com/courses/rxjs" target="_blank"><img width="100%" src="https://ultimatecourses.com/static/banners/ultimate-rxjs-leader.svg"></a>
 </div>
 
+
+<div align="center">
+ <img width="100%" src="public/certificate.jpg">
+</div>
+
 ---
 
 
